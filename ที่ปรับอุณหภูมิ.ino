@@ -14,5 +14,4 @@ void loop()
   analogWrite(led_pin,vr1);
   Serial.println(vr1);
   delay(500);
-  // test
 }
