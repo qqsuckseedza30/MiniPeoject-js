@@ -1,99 +1,74 @@
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7735.h>
-// Pines de comunicación SPI
-#define TFT_SCLK 2 // Pin_SCK
-#define TFT_MOSI 3 // Pin_SDA
-#define TFT_RST 10 // Pin_Res
-#define TFT_DC 6   // Pin_DC
-#define TFT_CS 7   // Pin_CS
-// Definicion de medidas de la pantalla
-#define SCREEN_WIDTH 100
-#define SCREEN_HEIGHT 160
-// Definición de los pines del Joystick
-#define BUTTON_LEFT 8   // Izquierda
-#define BUTTON_UP 9     // Arriba
-#define BUTTON_CENTER 4 // Centro
-#define BUTTON_DOWN 5   // Abajo
-#define BUTTON_RIGHT 13 // Derecha
-// Objeto Pantalla TFT
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
-void setup()
-{
-  // Declaración de los pines y activación de las resistencias PullUp
-  pinMode(BUTTON_LEFT, INPUT_PULLUP);
-  pinMode(BUTTON_UP, INPUT_PULLUP);
-  pinMode(BUTTON_CENTER, INPUT_PULLUP);
-  pinMode(BUTTON_DOWN, INPUT_PULLUP);
-  pinMode(BUTTON_RIGHT, INPUT_PULLUP);
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <LiquidCrystal_PCF8574.h>
 
-  // Se inicia la pantalla
-  tft.initR(INITR_BLACKTAB);
+#define ONE_WIRE_BUS 2            //กำหนดขาที่จะเชื่อมต่อ Sensor
+LiquidCrystal_PCF8574 lcd(0x27);  // LCD
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+
+int show = -1;
+byte dotOff[] = { 0b00000, 0b01110, 0b10001, 0b10001,
+                  0b10001, 0b01110, 0b00000, 0b00000 };
+byte dotOn[] = { 0b00000, 0b01110, 0b11111, 0b11111,
+                 0b11111, 0b01110, 0b00000, 0b00000 };
+
+void setup(void) {
+  Serial.begin(9600);
+  Serial.println("Dallas Temperature IC Control Library");
+  sensors.begin();
+  initLCD();
 }
-// Definición de variables
-int x = 50;
-int y = 80;
-int step = 1;
-int w = 15;
-int h = 13;
-int goal[] = {60, 100};
-// Definición de la función snake
-void snake()
-{
-  // Definición de variables de control del Joystick
-  int leftValue = digitalRead(BUTTON_LEFT);
-  int upValue = digitalRead(BUTTON_UP);
-  int centerValue = digitalRead(BUTTON_CENTER);
-  int downValue = digitalRead(BUTTON_DOWN);
-  int rightValue = digitalRead(BUTTON_RIGHT);
-  if (leftValue == LOW)
-  {
-    x = x - step;
-  }
-  if (rightValue == LOW)
-  {
-    x = x + step;
-  }
-  if (upValue == LOW)
-  {
-    y = y - step;
-  }
-  if (downValue == LOW)
-  {
-    y = y + step;
-  }
-  if (centerValue == LOW)
-  {
-    tft.fillScreen(ST7735_BLACK);
-    tft.fillRect(goal[0], goal[1], w, h, ST7735_ORANGE);
-  }
-  if (x < 0)
-  {
-    x = SCREEN_WIDTH - 1;
-  }
-  if (x > SCREEN_WIDTH - 1)
-  {
-    x = 0;
-  }
-  if (y < 0)
-  {
-    y = SCREEN_HEIGHT - 1;
-  }
-  if (y > SCREEN_HEIGHT - 1)
-  {
-    y = 0;
-  }
-  if (x >= goal[0] && x <= (goal[0] + w) && y >= goal[1] && y <= (goal[1] + h))
-  {
-    tft.fillScreen(ST7735_BLACK);
-    goal[0] = random(20, 80);
-    goal[1] = random(20, 150);
-    tft.fillRect(goal[0], goal[1], w, h, ST7735_ORANGE);
-  }
-  tft.fillCircle(x, y, 4, ST7735_BLUE);
-  delay(50);
+
+void loop(void) {
+  Serial.println("Requesting temperatures...");
+  sensors.requestTemperatures();  //อ่านข้อมูลจาก library
+  Serial.print("Temperature is: ");
+  Serial.print(sensors.getTempCByIndex(0));  // แสดงค่า อูณหภูมิ
+  Serial.println(" *C");
+
+  String msgDisplay1 = "Tmp : " + String(sensors.getTempCByIndex(0)) + " *C";
+   String msgDisplay2 = "===============";
+
+  //String msgDisplay1 = "====TEST1=====";
+  //String msgDisplay2 = "====TEST2======";
+
+  displayLCD(msgDisplay1, msgDisplay2);
+
+  delay(3000);
 }
-void loop()
-{
-  // Se llama a la función snake
-  snake();
+
+
+void initLCD() {
+  int error;
+  Wire.begin();
+  Wire.beginTransmission(0x27);
+  error = Wire.endTransmission();
+
+  if (error == 0) {
+    Serial.println(": LCD found.");
+    show = 0;
+    lcd.begin(16, 2);  // initialize the lcd
+    lcd.createChar(1, dotOff);
+    lcd.createChar(2, dotOn);
+    delay(1000);
+    lcd.setBacklight(255);
+    lcd.home();
+    lcd.clear();
+    lcd.print("Hello LCD");
+
+  } else {
+    Serial.println(": LCD not found.");
+  }
+}
+
+void displayLCD(String msg1, String msg2) {
+  // msg1 ข้อความที่จะแสดงบันทัดที่ 1
+  // msg2 ข้อความที่จะแสดงบันทัดที่ 2
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(msg1);
+  lcd.setCursor(0, 1);
+  lcd.print(msg2);
 }
