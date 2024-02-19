@@ -9,6 +9,7 @@ void setup()
 
 void loop()
 {
+  // Test
   int vr = analogRead(vr_pin);
   int vr1= map (vr,0,1023,0,10);
   analogWrite(led_pin,vr1);
