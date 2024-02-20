@@ -11,8 +11,8 @@ byte dotOff[] = { 0b00000, 0b01110, 0b10001, 0b10001, 0b10001, 0b01110, 0b00000,
 byte dotOn[] = { 0b00000, 0b01110, 0b11111, 0b11111, 0b11111, 0b01110, 0b00000, 0b00000 };
 
 int show = -1;
-int vlPin = A0;
-int led = 6;
+int vlPin = 01;
+int led = 12;
 
 
 void setup() {
@@ -26,19 +26,19 @@ void setup() {
 }
 
 void loop() {
-  int rawVL = analogRead(vlPin);
-  int vlN = map(rawVL, 0, 1023, 0, 50);
+  int rawaVL = analogRead(vlPin);
+  int vlN = map(rawVL, 0, 1023, 0, 35);
   
-  // Serial.println(vlN);
+   Serial.println(vlN);
 
-  // sensors.requestTemperatures();  //อ่านข้อมูลจาก library
-  // Serial.print("Temperature is: ");
-  // Serial.print(sensors.getTempCByIndex(0));  // แสดงค่า อูณหภูมิ
-  // Serial.println(" *C");
+   sensors.requestTemperatures();  //อ่านข้อมูลจาก library
+   Serial.print("Temperature is: ");
+   Serial.print(sensors.getTempCByIndex(0));  // แสดงค่า อูณหภูมิ
+   Serial.println(" *C");
   String msgDisplay1 = "Tmp : " + String(sensors.getTempCByIndex(0)) + " C ";
 
   if (sensors.getTempCByIndex(0) < vlN) {
-    String msgDisplay2 = "Start : " + String(vlN);
+    String msgDisplay2 = "Tmpvl : " + String(vlN);
     displayLCD(msgDisplay1, msgDisplay2);
     digitalWrite(led,1);
     
@@ -47,7 +47,7 @@ void loop() {
     Serial.println(msgDisplay2);
     
   } else {
-    String msgDisplay2 = "Stop : " + String(vlN);
+    String msgDisplay2 = "Tmpvl : " + String(vlN);
     displayLCD(msgDisplay1, msgDisplay2);
     digitalWrite(led,0);
 
