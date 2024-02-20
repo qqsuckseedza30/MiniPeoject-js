@@ -9,11 +9,17 @@ DallasTemperature sensors(&oneWire);
 
 byte dotOff[] = { 0b00000, 0b01110, 0b10001, 0b10001, 0b10001, 0b01110, 0b00000, 0b00000 };
 byte dotOn[] = { 0b00000, 0b01110, 0b11111, 0b11111, 0b11111, 0b01110, 0b00000, 0b00000 };
+
 int show = -1;
 int vlPin = A0;
+int led = 6;
+
 
 void setup() {
   pinMode(vlPin, INPUT);
+  pinMode(led,OUTPUT);
+ 
+  
   sensors.begin();
   initLCD();
   Serial.begin(9600);
@@ -29,12 +35,13 @@ void loop() {
   // Serial.print("Temperature is: ");
   // Serial.print(sensors.getTempCByIndex(0));  // แสดงค่า อูณหภูมิ
   // Serial.println(" *C");
-  String msgDisplay1 = "Tmp : " + String(sensors.getTempCByIndex(0)) + " *C";
+  String msgDisplay1 = "Tmp : " + String(sensors.getTempCByIndex(0)) + " C ";
 
   if (sensors.getTempCByIndex(0) < vlN) {
-
     String msgDisplay2 = "Start : " + String(vlN);
     displayLCD(msgDisplay1, msgDisplay2);
+    digitalWrite(led,1);
+    
 
     Serial.println(msgDisplay1);
     Serial.println(msgDisplay2);
@@ -42,7 +49,9 @@ void loop() {
   } else {
     String msgDisplay2 = "Stop : " + String(vlN);
     displayLCD(msgDisplay1, msgDisplay2);
-    Serial.print(msgDisplay1);
+    digitalWrite(led,0);
+
+    Serial.println(msgDisplay1);
     Serial.println(msgDisplay2);
   }
 
