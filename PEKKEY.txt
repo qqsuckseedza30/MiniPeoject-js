@@ -1,0 +1,79 @@
+int sensor1 = 8;
+int buzzer = A1;
+int analogPin = A0; //ประกาศตัวแปร ให้ analogPin 
+int val = 0;
+int GAS = 3; //GAS
+
+#include <TridentTD_LineNotify.h>
+
+#define SSID        "oo"                                     //ใส่ ชื่อ Wifi ที่จะเชื่อมต่อ
+#define PASSWORD    "55555555"                                   //ใส่ รหัส Wifi
+#define LINE_TOKEN  "F76IuwJVlIUhUXgn3kPZbseeuIcyblPVm45A4LlrwgQ" //ใส่ รหัส TOKEN ที่ได้มาจากข้างบน
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println(LINE.getVersion());
+  pinMode(GAS,INPUT);//GAS
+
+  WiFi.begin(SSID, PASSWORD);
+  Serial.printf("WiFi connecting to %s\n",  SSID);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(400);
+  }
+  Serial.printf("\nWiFi connected\nIP : ");
+  Serial.println(WiFi.localIP());
+
+  // กำหนด Line Token
+  LINE.setToken(LINE_TOKEN);
+  LINE.notify("เซ็นเซอร์ตรวจจับเปลวไฟ");
+
+  pinMode(sensor1, INPUT);
+  pinMode(buzzer, OUTPUT);
+  Serial.begin(9600);
+
+}
+void loop() {
+  int G =digitalRead(GAS);
+ 
+  
+  val = analogRead(analogPin);  //อ่านค่าสัญญาณ analog 
+  Serial.print("val = "); // พิมพ์ข้อมความส่งเข้าคอมพิวเตอร์ "val = "
+  Serial.println(val); // พิมพ์ค่าของตัวแปร val
+  
+  int val1 = digitalRead(sensor1);
+
+  Serial.print("ค่าแสง 1 : ");
+  Serial.print(val1);
+
+  if(val1 == 0 ){
+    digitalWrite(buzzer, LOW);
+  }
+  else{
+    digitalWrite(buzzer, HIGH);
+  }
+
+  if (val1 == 0 ) {
+    String LineText;
+    String string1 = "ตรวจพบเปลวไฟ";
+    LineText = string1;
+    Serial.print("Line ");
+    Serial.println(LineText);
+    LINE.notify(LineText);
+  }
+    if(G == 0 ){
+    digitalWrite(buzzer, LOW);
+  }
+  else{
+    digitalWrite(buzzer, HIGH);
+  }
+   if (G == 0 ) {
+    String LineText;
+    String string1 = "ตรวจพบGAS";
+    LineText = string1;
+    Serial.print("Line ");
+    Serial.println(LineText);
+    LINE.notify(LineText);
+   }
+} 
