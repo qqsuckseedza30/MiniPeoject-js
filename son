@@ -1,0 +1,87 @@
+#include <TridentTD_LineNotify.h>
+
+#define SSID        "ss"      // บรรทัดที่ 11 ให้ใส่ ชื่อ Wifi ที่จะเชื่อมต่อ
+#define PASSWORD    "ssssssss"     // บรรทัดที่ 12 ใส่ รหัส Wifi
+#define LINE_TOKEN  "fcoEKtsnaToG9w0thotKMvQGGhX4D3xNxHzcFMh1hNZ" 
+
+int Sen = 2; 
+
+int buzzer = 1; //
+int ledPin = 12;
+int digitalPin = 6;
+int val = 0;
+
+void setup() {
+  Serial.begin(9600);
+  
+  Serial.println(LINE.getVersion());
+
+  WiFi.begin(SSID, PASSWORD);
+  Serial.printf("WiFi connecting to %s\n",  SSID);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(400);
+  }
+  Serial.printf("\nWiFi connected\nIP : ");
+  Serial.println(WiFi.localIP());
+
+  // กำหนด Line Token
+  LINE.setToken(LINE_TOKEN);
+  //LINE
+  pinMode(buzzer, OUTPUT);
+  pinMode(ledPin, OUTPUT);
+  pinMode(digitalPin, INPUT);
+   pinMode(Sen, INPUT);
+  
+}
+
+void loop() {
+  int val1 = digitalRead(Sen);
+ Serial.println(val1);
+
+ if (val1 == 0 ){
+  digitalWrite(buzzer, LOW);
+ digitalWrite(ledPin,HIGH);
+
+}
+else {
+    digitalWrite(buzzer, HIGH);
+    digitalWrite(ledPin, LOW);
+  }
+   if (val1 == 0 ) {
+    String LineText;
+    String string1 = "ตรวจพบเสียง";
+    LineText = string1;
+    Serial.print("Line ");
+    Serial.println(LineText);
+    LINE.notify(LineText);
+  }
+  delay(100);
+
+
+
+
+
+  
+  val = digitalRead(digitalPin);
+  Serial.print("val = ");
+  Serial.println(val);
+  
+  if (val == 0) {
+    digitalWrite(buzzer, LOW);
+    digitalWrite(ledPin, HIGH);
+  }
+  else {
+    digitalWrite(buzzer, HIGH);
+    digitalWrite(ledPin, LOW);
+  }
+  if (val == 0 ) {
+    String LineText;
+    String string1 = "ตรวจพบวัตถุ";
+    LineText = string1;
+    Serial.print("Line ");
+    Serial.println(LineText);
+    LINE.notify(LineText);
+  }
+  delay(100);
+}
