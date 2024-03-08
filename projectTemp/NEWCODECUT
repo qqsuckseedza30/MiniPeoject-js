@@ -1,0 +1,92 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <LiquidCrystal_PCF8574.h>
+
+#define ONE_WIRE_BUS 2            //กำหนดขาที่จะเชื่อมต่อ Sensor
+LiquidCrystal_PCF8574 lcd(0x27);  // LCD
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+
+byte dotOff[] = { 0b00000, 0b01110, 0b10001, 0b10001, 0b10001, 0b01110, 0b00000, 0b00000 };
+byte dotOn[] = { 0b00000, 0b01110, 0b11111, 0b11111, 0b11111, 0b01110, 0b00000, 0b00000 };
+
+int show = -1;
+int vlPin = 01;//ปรับค่าอุณหภูมิ
+int ht = 12;  //ไฟเลี้ยงรีเลย์
+int ledht = 18;//ไฟแสดงฮีสเตอร์
+int led1=19;//ไฟแสดงบอร์ด
+
+
+
+void setup() {
+  lcd.begin(16, 2);  // initialize the lcd
+  lcd.createChar(1, dotOff);
+    lcd.createChar(2, dotOn);
+    delay(1000);
+  lcd.setBacklight(255);
+  lcd.home();
+
+  pinMode(vlPin, INPUT);
+  pinMode(ht,OUTPUT);
+  pinMode(ledht,OUTPUT);
+  digitalWrite(led1,HIGH);
+ 
+  
+  sensors.begin();
+
+  Serial.begin(9600);
+  
+}
+
+void loop() {
+  digitalWrite(led1,HIGH);//ไฟแสดงบอร์ด
+  
+  int rawVL = analogRead(vlPin);//อ่านค่าRปรับค่าได้
+  int vlN = map(rawVL, 0, 1023, 0, 35);//กำหนดค่าR
+  
+   Serial.println(vlN);//แสดงค่าRปรับค่าได้
+
+   sensors.requestTemperatures();  //อ่านข้อมูลจาก library
+   Serial.print("Temperature is: ");//แสดงข้อความ
+   Serial.print(sensors.getTempCByIndex(0));  // แสดงค่า อูณหภูมิ
+   Serial.println(" *C");//แสดงข้อความ
+  String msgDisplay1 = "Tmp : " + String(sensors.getTempCByIndex(0)) + " C ";
+
+  if (sensors.getTempCByIndex(0) < vlN) {
+    String msgDisplay2 = "Tmpvl : " + String(vlN);
+    displayLCD(msgDisplay1, msgDisplay2);
+    digitalWrite(ht,HIGH);//ไฟ5Vจะส่งไปยังรีเลย์
+    digitalWrite(ledht,HIGH);//ledhtจะติด
+    
+
+    Serial.println(msgDisplay1);
+    Serial.println(msgDisplay2);
+    
+  } else {
+    String msgDisplay2 = "Tmpvl : " + String(vlN);
+    displayLCD(msgDisplay1, msgDisplay2);
+    digitalWrite(ht,LOW);      //ไฟ5Vจะไม่ส่งไปยังรีเลย์
+    digitalWrite(ledht,LOW);  //ledhtจะดับ
+
+
+    Serial.println(msgDisplay1);
+    Serial.println(msgDisplay2);
+  }
+
+  delay(1000);
+}
+
+
+
+
+void displayLCD(String msg1, String msg2) {
+  // msg1 ข้อความที่จะแสดงบันทัดที่ 1
+  // msg2 ข้อความที่จะแสดงบันทัดที่ 2
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print(msg1);
+
+  lcd.setCursor(0, 1);
+  lcd.print(msg2);
+}
